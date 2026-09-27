@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String               @id @default(uuid())
+  email                String               @unique
+  password             String
+  name                 String
+  role                 String               @default("PATIENT")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  profile              Profile?
+  scans                RetinalScan[]
+  chatSessions         ChatSession[]
+  reviews              ProfessionalReview[]
+}
+
+model Profile {
+  id                   String               @id @default(uuid())
+  userId               String               @unique
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mobile               String?
+  age                  Int?
+  gender               String?
+  city                 String?
+  state                String?
+  language             String               @default("en")
+  medicalHistory       String?
+  diabeticStatus       String?
+  onboardingComplete   Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+}
+
+model RetinalScan {
+  id                   String               @id @default(uuid())
+  userId               String
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imagePath            String
+  originalFilename     String
+  mimeType             String
+  fileSize             Int
+  eye                  String               @default("Right Eye")
+  scanDate             DateTime             @default(now())
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  analysisResult       AnalysisResult?
+  findings             RetinalFinding[]
+  review               ProfessionalReview?
+  report               Report?
+}
+
+model AnalysisResult {
+  id                   String               @id @default(uuid())
+  scanId               String               @unique
+  scan                 RetinalScan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  qualityScore         Float
+  qualityUsable        Boolean              @default(true)
+  screeningCategory    String
+  screeningConfidence   Float
+  severity             String
+  explanation          String
+  clinicalNotes        String
+  modelVersion         String
+  isDemo               Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+}
+
+model RetinalFinding {
+  id                   String               @id @default(uuid())
+  scanId               String
+  scan                 RetinalScan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  type                 String
+  count                Int
+  confidence           Float
+  locationsJson        String               // JSON array of [{x, y, radius}]
+  createdAt            DateTime             @default(now())
+}
+
+model ProfessionalReview {
+  id                   String               @id @default(uuid())
+  scanId               String               @unique
+  scan                 RetinalScan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  reviewerId           String?
+  reviewer             User?                @relation(fields: [reviewerId], references: [id])
+  status               String               @default("PENDING") // PENDING, APPROVED, REVISED, REJECTED
+  comments             String?
+  modifiedSeverity     String?
+  reviewedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+}
+
+model Report {
+  id                   String               @id @default(uuid())
+  scanId               String               @unique
+  scan                 RetinalScan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  reportNumber         String               @unique
+  pdfPath              String?
+  generatedAt          DateTime             @default(now())
+  createdAt            DateTime             @default(now())
+}
+
+model ChatSession {
+  id                   String               @id @default(uuid())
+  userId               String
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                String               @default("New Chat")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  messages             ChatMessage[]
+}
+
+model ChatMessage {
+  id                   String               @id @default(uuid())
+  sessionId            String
+  session              ChatSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender               String               // user or assistant
+  text                 String
+  language             String               @default("en")
+  createdAt            DateTime             @default(now())
+}
+
+model GovernmentScheme {
+  id                   String               @id @default(uuid())
+  title                String
+  description          String
+  eligibility          String
+  officialUrl          String
+  category             String               @default("Eye Health & General")
+  createdAt            DateTime             @default(now())
+}
+
+model EmergencyNumber {
+  id                   String               @id @default(uuid())
+  service              String
+  number               String
+  description          String
+  icon                 String
+  createdAt            DateTime             @default(now())
+}

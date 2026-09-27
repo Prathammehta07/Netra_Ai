@@ -1,0 +1,22 @@
+{
+  "name": "netra-ai-master",
+  "version": "1.0.0",
+  "description": "Netra AI - Complete AI Retinal Analysis Web Application",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "seed:db": "cd backend && npm run db:seed"
+  },
+  "keywords": [
+    "diabetic-retinopathy",
+    "ai-healthcare",
+    "react",
+    "express",
+    "prisma",
+    "fastapi"
+  ],
+  "author": "Netra AI Engineering",
+  "license": "MIT"
+}
